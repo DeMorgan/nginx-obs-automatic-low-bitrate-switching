@@ -12,11 +12,11 @@ stop:
     error: "Chyba nemožno zastaviť stream: %{error}"
 switch:
     noParams: Žiadný zdroj specifikovaný
-    success: Scene successfully switched to "%{scene}"
+    success: Scena úspešne zmenená na "%{scene}"
     error: Chyba nemožno zmeniť scénu "%{scene}"
 source:
     noParams: Žiadný zdroj specifikovaný
-    success: Source "%{name}" successfully %{status}
+    success: Zroj "%{name}" úspešne %{status}
     error: Chyba prepínania zdroja "%{name}"
     enabled: povolené
     disabled: zakázané
@@ -34,7 +34,7 @@ sourceinfo:
     notFound: "Chyba nebol nájdený žiadny server s názvom: %{name}"
 serverinfo:
     noInfo: Nie sú k dispozícii žiadne informácie o serveri
-    success: "scéna: %{scene}, bitrate: %{bitrate} Kbps, fps: %{fps}, odhodených z dôvodu: sieť: %{network}, vykreslovací lag: %{rendering}, encoding lag: %{encoding}, CPU: %{cpu}, memory: %{memory}, voľné miesto na disku: %{disk}"
+    success: "scéna: %{scene}, bitrate: %{bitrate} Kbps, fps: %{fps}, odhodených z dôvodu: sieť: %{network}, vykreslovací lag: %{rendering}, encoding lag: %{encoding}, CPU: %{cpu}, pamäť: %{memory}, voľné miesto na disku: %{disk}"
 rec:
     started: Nahrávanie spustené
     stopped: Nahrávanie zastavené
@@ -73,7 +73,7 @@ noalbs:
     switcherDisabled: Úspešne zakázaný prepínač
     instantSwitch: Okamžité prepnutie pri obnove %{condition}
     langError: Nie je možné aktualizovať jazyk NOALBS
-    langErrorInvalid: Chyba upravy jazyku %{lang} nie je platná hodnota
+    langErrorInvalid: Chyba úpravy jazyku %{lang} nie je platná hodnota
     langSuccess: NOALBS jazyk zmenený na %{lang}
     retryCount: Aktuálne opakovanie nastavené na %{count}
     retryError: Chyba úpravy pokusov o obnovenie %{count} nie je platná hodnota

@@ -80,9 +80,7 @@ impl From<&str> for Command {
             "switch" => Command::Switch,
             "trigger" => Command::Trigger,
             "source" => Command::Source,
-
             "noalbsversion" => Command::Version,
-
             "live" => Command::LiveScene,
             "privacy" => Command::PrivacyScene,
             "starting" => Command::StartingScene,
@@ -129,6 +127,7 @@ pub enum ChatLanguage {
     PL,
     PTBR,
     RU,
+    SK,
     SV,
     TR,
     ZHTW,
@@ -148,6 +147,7 @@ impl Display for ChatLanguage {
             ChatLanguage::PL => write!(f, "pl"),
             ChatLanguage::PTBR => write!(f, "pt_br"),
             ChatLanguage::RU => write!(f, "ru"),
+            ChatLanguage::SK => write!(f, "sk"),
             ChatLanguage::SV => write!(f, "sv"),
             ChatLanguage::TR => write!(f, "tr"),
             ChatLanguage::ZHTW => write!(f, "zh_tw"),
@@ -173,6 +173,7 @@ impl std::str::FromStr for ChatLanguage {
             "pl" => Ok(ChatLanguage::PL),
             "pt_br" => Ok(ChatLanguage::PTBR),
             "ru" => Ok(ChatLanguage::RU),
+            "sk" => Ok(ChatLanguage::SK),
             "sv" => Ok(ChatLanguage::SV),
             "tr" => Ok(ChatLanguage::TR),
             "zh_tw" => Ok(ChatLanguage::ZHTW),

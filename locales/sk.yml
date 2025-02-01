@@ -1,0 +1,89 @@
+start:
+    success: Stream bol úspešne spustený
+    error: "Chyba nemôžno spustiť stream: %{error}"
+startTwitchTranscoding:
+    trying: Pokus o spuštění streamu s transcodingom
+    successNoTranscoding: Úspešne spustený stream bez transcodingu
+    success: Spuštěný stream s transcodingom %{attemptsMessage}
+    attempts: ", trvalo %{count} pokusov"
+stop:
+    success: stream bol úspešne zastavený
+    raid: Stream bol zastavený a urobil nájazd na %{display_channel} prosím hoďte follow na %{channel}
+    error: "Chyba nemožno zastaviť stream: %{error}"
+switch:
+    noParams: Žiadný zdroj specifikovaný
+    success: Scene successfully switched to "%{scene}"
+    error: Chyba nemožno zmeniť scénu "%{scene}"
+source:
+    noParams: Žiadný zdroj specifikovaný
+    success: Source "%{name}" successfully %{status}
+    error: Chyba prepínania zdroja "%{name}"
+    enabled: povolené
+    disabled: zakázané
+bitrate:
+    success: "%{name}: %{message}"
+    error: "Žiadné pripojenie :("
+trigger:
+    success: Spúšť nastavená na %{number}
+    successDisabled: Spúšť úspešne zakázana
+    error: Chyba úpravy spúšte %{number} nieje platná hodnota
+    current: Aktualná spúšť nastavená na %{number}
+    disabled: Aktualná spúšť je zakázaná
+sourceinfo:
+    noInfo: Žiadne informácie
+    notFound: "Chyba nebol nájdený žiadny server s názvom: %{name}"
+serverinfo:
+    noInfo: Nie sú k dispozícii žiadne informácie o serveri
+    success: "scéna: %{scene}, bitrate: %{bitrate} Kbps, fps: %{fps}, odhodených z dôvodu: sieť: %{network}, vykreslovací lag: %{rendering}, encoding lag: %{encoding}, CPU: %{cpu}, memory: %{memory}, voľné miesto na disku: %{disk}"
+rec:
+    started: Nahrávanie spustené
+    stopped: Nahrávanie zastavené
+    errorStatus: Chyba getting recording status
+    errorToggle: Chybá prepínania nahrávania
+fix:
+    try: Skúšanie opravania streamu
+    error: Chyba pri oprave streamu
+refresh:
+    try: Obnova streamu
+    error: Chyba pri obnove streamu
+    success: Obnová streamu dokončená
+    noScene: Žiadne nastavenie obnovenia scény, namiesto toho sa používa oprava
+alias:
+    success: Pridaná skratka %{alias} -> %{command}
+    removed: Skratka %{alias} vymazaná
+    errorCommand: Príkaz %{command} neexistuje
+    errorAlias: Skratka %{alias} neexistuje
+    errorAlreadyUsed: "%{alias} už sa používa ako skratka"
+    errorIncorrectArguments: Chyba nesprávne zadané argumenty
+sceneSwitch:
+    switch: Scéna zmená na "%{scene}"
+offlineTimeout:
+    timeout: Offline timeout dosiahný, zastavuje sa stream
+handleCommands:
+    public: Verejné príkazy %{condition}
+    mod: Mod príkazy %{condition}
+    notify: Auto prepinanie notifikacia %{condition}
+    autostop: Auto zastavenie streamu %{condition}
+    enabled: je povolený
+    disabled: je zakázaný
+noalbs:
+    prefix: NOALBS predpona zmenená na %{prefix}
+    errorPrefix: Nie je možné aktualizovať NOALBS predponu
+    switcherEnabled: Úspešne povolený prepínač
+    switcherDisabled: Úspešne zakázaný prepínač
+    instantSwitch: Okamžité prepnutie pri obnove %{condition}
+    langError: Nie je možné aktualizovať jazyk NOALBS
+    langErrorInvalid: Chyba upravy jazyku %{lang} nie je platná hodnota
+    langSuccess: NOALBS jazyk zmenený na %{lang}
+    retryCount: Aktuálne opakovanie nastavené na %{count}
+    retryError: Chyba úpravy pokusov o obnovenie %{count} nie je platná hodnota
+    retrySuccess: Pokusy o opakovanie nastavené na %{count}
+scene:
+    success: Prepnutie scény na %{scene}
+    error: Nie je nastavená žiadna scéna %{scene}
+collection:
+    noParams: Žiadna kolekcia špefikovaná
+    notFound: "Chyba kolekcia s názvom: %{collection} sa nenašla"
+    success: Kolekcia úspešne zmená na "%{collection}"
+    error: Chyba nemožno prepnúť na kolekciu "%{collection}"
+    note: "Poznámka: profil sa zmení len vtedy, keď sa nestreamuje."

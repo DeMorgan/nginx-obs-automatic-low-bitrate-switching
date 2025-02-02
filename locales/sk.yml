@@ -1,89 +1,89 @@
 start:
-    success: Stream bol úspešne spustený
-    error: "Chyba nemôžno spustiť stream: %{error}"
+    success: "Stream bol úspešne spustený."
+    error: "Chyba: Stream sa nepodarilo spustiť: %{error}"
 startTwitchTranscoding:
-    trying: Pokus o spuštění streamu s transcodingom
-    successNoTranscoding: Úspešne spustený stream bez transcodingu
-    success: Spuštěný stream s transcodingom %{attemptsMessage}
-    attempts: ", trvalo %{count} pokusov"
+    trying: "Prebieha pokus o spustenie streamu s transkódovaním."
+    successNoTranscoding: "Stream bol úspešne spustený bez transkódovania."
+    success: "tream bol spustený s transkódovaním %{attemptsMessage}."
+    attempts: ", trvalo %{count} pokusov."
 stop:
-    success: stream bol úspešne zastavený
-    raid: Stream bol zastavený a urobil nájazd na %{display_channel} prosím hoďte follow na %{channel}
-    error: "Chyba nemožno zastaviť stream: %{error}"
+    success: "Stream bol úspešne zastavený."
+    raid: "Stream bol zastavený a vykonal nájazd na %{display_channel}. Prosím, dajte follow na %{channel}."
+    error: "Chyba: Stream sa nepodarilo zastaviť: %{error}"
 switch:
-    noParams: Žiadný zdroj specifikovaný
-    success: Scena úspešne zmenená na "%{scene}"
-    error: Chyba nemožno zmeniť scénu "%{scene}"
+    noParams: "Nebol špecifikovaný žiadny zdroj."
+    success: "Scéna bola úspešne zmenená na %{scene}."
+    error: "Chyba: Nepodarilo sa zmeniť scénu %{scene}."
 source:
-    noParams: Žiadný zdroj specifikovaný
-    success: Zroj "%{name}" úspešne %{status}
-    error: Chyba prepínania zdroja "%{name}"
-    enabled: povolené
-    disabled: zakázané
+    noParams: "Nebol špecifikovaný žiadny zdroj."
+    success: "Zdroj %{name} bol úspešne %{status}."
+    error: "Chyba: Nepodarilo sa prepínať zdroj %{name}."
+    enabled: "povolený"
+    disabled: "zakázaný"
 bitrate:
     success: "%{name}: %{message}"
-    error: "Žiadné pripojenie :("
+    error: "Žiadne pripojenie :("
 trigger:
-    success: Spúšť nastavená na %{number}
-    successDisabled: Spúšť úspešne zakázana
-    error: Chyba úpravy spúšte %{number} nieje platná hodnota
-    current: Aktualná spúšť nastavená na %{number}
-    disabled: Aktualná spúšť je zakázaná
+    success: "Spúšť bola nastavená na hodnotu %{number}."
+    successDisabled: Spúšť bola úspešne zakázaná.
+    error: "Chyba: Hodnota %{number} nie je platná pre spúšť."
+    current: "Aktuálna hodnota spúšte je %{number}."
+    disabled: "Aktuálna spúšť je zakázaná."
 sourceinfo:
-    noInfo: Žiadne informácie
-    notFound: "Chyba nebol nájdený žiadny server s názvom: %{name}"
+    noInfo: "Nie sú dostupné žiadne informácie."
+    notFound: "Chyba: Nebol nájdený žiadny server s názvom %{name}."
 serverinfo:
-    noInfo: Nie sú k dispozícii žiadne informácie o serveri
-    success: "scéna: %{scene}, bitrate: %{bitrate} Kbps, fps: %{fps}, odhodených z dôvodu: sieť: %{network}, vykreslovací lag: %{rendering}, encoding lag: %{encoding}, CPU: %{cpu}, pamäť: %{memory}, voľné miesto na disku: %{disk}"
+    noInfo: "Nie sú dostupné žiadne informácie o serveri."
+    success: "Scéna: %{scene}, bitrate: %{bitrate} Kbps, FPS: %{fps}, zahodené snímky: sieť %{network}, vykresľovací lag %{rendering}, kódovací lag %{encoding}, CPU %{cpu}, pamäť %{memory}, voľné miesto na disku %{disk}."
 rec:
-    started: Nahrávanie spustené
-    stopped: Nahrávanie zastavené
-    errorStatus: Chyba getting recording status
-    errorToggle: Chybá prepínania nahrávania
+    started: "Nahrávanie bolo spustené."
+    stopped: "Nahrávanie bolo zastavené."
+    errorStatus: "Chyba: Nepodarilo sa získať stav nahrávania."
+    errorToggle: "Chyba: Nepodarilo sa prepínať nahrávanie."
 fix:
-    try: Skúšanie opravania streamu
-    error: Chyba pri oprave streamu
+    try: "Prebieha pokus o opravu streamu."
+    error: "Chyba: Nepodarilo sa opraviť stream."
 refresh:
-    try: Obnova streamu
-    error: Chyba pri obnove streamu
-    success: Obnová streamu dokončená
-    noScene: Žiadne nastavenie obnovenia scény, namiesto toho sa používa oprava
+    try: "Prebieha obnova streamu."
+    error: "Chyba: Nepodarilo sa obnoviť stream."
+    success: "Stream bol úspešne obnovený."
+    noScene: "Nebolo nastavené obnovenie scény, namiesto toho sa použije oprava."
 alias:
-    success: Pridaná skratka %{alias} -> %{command}
-    removed: Skratka %{alias} vymazaná
-    errorCommand: Príkaz %{command} neexistuje
-    errorAlias: Skratka %{alias} neexistuje
-    errorAlreadyUsed: "%{alias} už sa používa ako skratka"
-    errorIncorrectArguments: Chyba nesprávne zadané argumenty
+    success: "Skratka %{alias} bola pridaná pre príkaz %{command}."
+    removed: "Skratka %{alias} bola odstránená."
+    errorCommand: "Chyba: Príkaz %{command} neexistuje."
+    errorAlias: "Chyba: Skratka %{alias} neexistuje."
+    errorAlreadyUsed: "Chyba: %{alias} je už používaná ako skratka."
+    errorIncorrectArguments: "Chyba: Nesprávne zadané argumenty."
 sceneSwitch:
-    switch: Scéna zmená na "%{scene}"
+    switch: "Scéna bola zmenená na %{scene}."
 offlineTimeout:
-    timeout: Offline timeout dosiahný, zastavuje sa stream
+    timeout: "Dosiahnutý offline timeout, stream sa zastavuje."
 handleCommands:
-    public: Verejné príkazy %{condition}
-    mod: Mod príkazy %{condition}
-    notify: Auto prepinanie notifikacia %{condition}
-    autostop: Auto zastavenie streamu %{condition}
-    enabled: je povolený
-    disabled: je zakázaný
+    public: "Verejné príkazy: %{condition}."
+    mod: "Moderátorské príkazy: %{condition}."
+    notify: "Automatické prepínanie notifikácií: %{condition}."
+    autostop: "Automatické zastavenie streamu: %{condition}."
+    enabled: "povolené"
+    disabled: "zakázané"
 noalbs:
-    prefix: NOALBS predpona zmenená na %{prefix}
-    errorPrefix: Nie je možné aktualizovať NOALBS predponu
-    switcherEnabled: Úspešne povolený prepínač
-    switcherDisabled: Úspešne zakázaný prepínač
-    instantSwitch: Okamžité prepnutie pri obnove %{condition}
-    langError: Nie je možné aktualizovať jazyk NOALBS
-    langErrorInvalid: Chyba úpravy jazyku %{lang} nie je platná hodnota
-    langSuccess: NOALBS jazyk zmenený na %{lang}
-    retryCount: Aktuálne opakovanie nastavené na %{count}
-    retryError: Chyba úpravy pokusov o obnovenie %{count} nie je platná hodnota
-    retrySuccess: Pokusy o opakovanie nastavené na %{count}
+    prefix: "NOALBS predpona bola zmenená na %{prefix}."
+    errorPrefix: "Chyba: Nepodarilo sa aktualizovať predponu NOALBS."
+    switcherEnabled: "Prepínač bol úspešne povolený."
+    switcherDisabled: "Prepínač bol úspešne zakázaný."
+    instantSwitch: "Okamžité prepnutie pri obnove: %{condition}."
+    langError: "Chyba: Nepodarilo sa aktualizovať jazyk NOALBS."
+    langErrorInvalid: "Chyba: %{lang} nie je platná hodnota pre jazyk."
+    langSuccess: "NOALBS jazyk bol úspešne zmenený na %{lang}."
+    retryCount: "Aktuálny počet opakovaní je nastavený na %{count}."
+    retryError: "Chyba: %{count} nie je platná hodnota pre počet pokusov."
+    retrySuccess: "Počet pokusov bol úspešne nastavený na %{count}."
 scene:
-    success: Prepnutie scény na %{scene}
-    error: Nie je nastavená žiadna scéna %{scene}
+    success: "Scéna bola úspešne prepnutá na %{scene}."
+    error: "Chyba: Nie je nastavená žiadna scéna %{scene}."
 collection:
-    noParams: Žiadna kolekcia špefikovaná
-    notFound: "Chyba kolekcia s názvom: %{collection} sa nenašla"
-    success: Kolekcia úspešne zmená na "%{collection}"
-    error: Chyba nemožno prepnúť na kolekciu "%{collection}"
-    note: "Poznámka: profil sa zmení len vtedy, keď sa nestreamuje."
+    noParams: "Nebola špecifikovaná žiadna kolekcia."
+    notFound: "Chyba: Kolekcia s názvom %{collection} nebola nájdená."
+    success: "Kolekcia bola úspešne zmenená na %{collection}."
+    error: "Chyba: Nepodarilo sa prepnúť na kolekciu %{collection}."
+    note: "Poznámka: Profil sa zmení len vtedy, ak nie je spustený stream."

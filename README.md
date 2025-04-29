@@ -250,10 +250,10 @@ The `config.json` file holds all the user configurations.
     ]
   },
   "software": {
-    "type": "Obs",                                  // NOALBS supports OBS WebSocket v4 and v5. To still use v4 use type ObsOld.
+    "type": "Obs",                                  // NOALBS supports OBS WebSocket v5.
     "host": "localhost",                            // Host of your OBS, most commonly used is; localhost.
     "password": "example",                          // Password to the OBS Websockets.
-    "port": 4455,                                    // Port to the OBS Websockets.
+    "port": 4455,                                   // Port to the OBS Websockets.
     "collections": {
       "twitch": {
         "profile": "twitch_profile",
@@ -310,7 +310,7 @@ The `config.json` file holds all the user configurations.
     "twitchTranscodingCheck": false,                // Enable or Disable transcoding check on twitch for your stream. (Non-Partners Only)
     "twitchTranscodingRetries": 5,                  // How many times you would like the transcoding checked before giving up.
     "twitchTranscodingDelaySeconds": 15,            // How long you want to wait to check inbetween checks.
-    "offlineTimeout": null,                         // OBS will stop streaming when you you've been in your offline scene for this amount of time.
+    "offlineTimeout": null,                         // "offlineTimeout": 5, = 5 Minutes - OBS will stop streaming when you you've been in your offline scene for this amount of time.
     "recordWhileStreaming": false,                  // Automatically record when you start streaming.
     "switchToStartingSceneOnStreamStart": false,    // Automatically switch to the starting scene when you start streaming.
     "switchFromStartingSceneToLiveScene": false     // Automatically switch to live scene when you start streaming IRL.
@@ -349,7 +349,7 @@ The `config.json` file holds all the user configurations.
 
 - `type`: Replace this with the software you're using.
 
-NOALBS supports OBS WebSocket v4 and v5. To still use v4 use type `ObsOld`.
+NOALBS supports OBS WebSocket v5.
 
 - `collections`: Optional configurable scene collections and profiles to be used with the `!collection` command.
 

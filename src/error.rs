@@ -10,10 +10,7 @@ pub enum Error {
     XmlParsing(#[from] quick_xml::DeError),
 
     #[error("OBS error {0}")]
-    ObsError(#[from] obws::Error),
-
-    #[error("OBS error {0}")]
-    ObsV5Error(#[from] obwsv5::Error),
+    ObsV5Error(#[from] obwsv5::error::Error),
 
     #[error("SwitchType conversion not allowed")]
     SwitchTypeNotSupported,

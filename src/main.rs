@@ -4,7 +4,7 @@ use std::{env, sync::Arc};
 use anyhow::Result;
 use tokio::signal;
 
-use noalbs::{chat::ChatPlatform, config, Noalbs};
+use noalbs::{Noalbs, chat::ChatPlatform, config};
 use tracing::warn;
 
 #[tokio::main]
@@ -14,7 +14,10 @@ async fn main() -> Result<()> {
     let _ = print_if_new_version().await;
 
     if env::var("RUST_LOG").is_err() {
-        env::set_var("RUST_LOG", "noalbs=info");
+        // TODO: set_var is now unsafe. Check if it's safe to use.
+        unsafe {
+            env::set_var("RUST_LOG", "noalbs=info");
+        }
     }
 
     let (non_blocking_appender, _guard) = tracing_appender::non_blocking(appender());

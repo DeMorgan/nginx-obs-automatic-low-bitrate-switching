@@ -17,6 +17,15 @@ pub struct Config {
     pub chat: Option<Chat>,
     pub optional_scenes: OptionalScenes,
     pub optional_options: OptionalOptions,
+
+    /// Whether to also write logs to a file in addition to stdout.
+    /// Defaults to true when not present, for backwards compatibility.
+    #[serde(default = "default_log_to_file")]
+    pub log_to_file: bool,
+}
+
+fn default_log_to_file() -> bool {
+    true
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Hash, PartialEq, Eq)]
@@ -67,8 +76,7 @@ impl Switcher {
 
     /// Sort by highest number first
     pub fn sort_stream_servers(&mut self) {
-        self.stream_servers
-            .sort_by(|a, b| a.priority.cmp(&b.priority));
+        self.stream_servers.sort_by_key(|a| a.priority);
     }
 
     pub fn set_bitrate_switcher_enabled(&mut self, enabled: bool) {
@@ -137,6 +145,7 @@ pub struct Chat {
     pub platform: ConfigChatPlatform,
     pub username: String,
     pub admins: Vec<String>,
+    pub ignore_users: Vec<String>,
     pub language: chat::ChatLanguage,
 
     pub prefix: String,
@@ -154,6 +163,7 @@ impl Default for Chat {
             platform: ConfigChatPlatform::Twitch,
             username: "715209".to_string(),
             admins: vec![],
+            ignore_users: vec![],
             language: chat::ChatLanguage::EN,
             prefix: "!".to_string(),
             enable_public_commands: true,
@@ -246,6 +256,10 @@ impl ConfigLogic for File {
 
             for admin in &mut chat.admins {
                 admin.make_ascii_lowercase();
+            }
+
+            for ignore_user in &mut chat.ignore_users {
+                ignore_user.make_ascii_lowercase();
             }
 
             if let Some(commands) = &mut chat.commands {
@@ -345,6 +359,7 @@ struct RtmpOld {
     key: Option<String>,
     id: Option<String>,
     publisher: Option<String>,
+    api_key: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -413,6 +428,7 @@ impl From<ConfigOld> for Config {
             }),
             optional_scenes: OptionalScenes::default(),
             optional_options: OptionalOptions::default(),
+            log_to_file: default_log_to_file(),
         };
 
         let commands = config.chat.as_mut().unwrap().commands.as_mut().unwrap();
@@ -452,10 +468,10 @@ impl From<ConfigOld> for Config {
         let ss = stream_servers::StreamServer::from(o.rtmp);
         config.switcher.stream_servers.push(ss);
 
-        if let Some(lang) = o.language {
-            if let Ok(l) = lang.parse() {
-                config.chat.as_mut().unwrap().language = l;
-            }
+        if let Some(lang) = o.language
+            && let Ok(l) = lang.parse()
+        {
+            config.chat.as_mut().unwrap().language = l;
         }
 
         config
@@ -507,6 +523,7 @@ impl From<RtmpOld> for stream_servers::StreamServer {
                     Box::new(stream_servers::sls::SrtLiveServer {
                         stats_url,
                         publisher,
+                        api_key: r.api_key,
                         client: reqwest::Client::new(),
                     })
                 }

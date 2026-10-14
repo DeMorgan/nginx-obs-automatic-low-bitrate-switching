@@ -46,10 +46,15 @@ Don't feel like setting this all up by yourself?
 | [IRLToolkit](https://irltoolkit.com/) | Step your stream up to the next level! |
 | [IRLTK - NoDrop](https://nodrop.irl.run/) | Go Live Without Worry, With IRLToolkit NoDrop, you'll never worry about splitting VODs again! |
 | [noRIP.io](https://www.norip.io) | Services to stabilize your stream |
-| [StreamAtom](https://streamatom.com/irl?screen=RtmpServer) | Powered by the StreamAtom Team, Supported by you. |
 | [IRLtools](https://irltools.com?ref=NOALBS) | IRL Accessories & Guides
 | [IRLServer](https://irlserver.com) | Simplify and Stabilize your IRL-stream. |
 | [OBS-Hosting](https://obs-hosting.de) | German OBS/IRL & 24/7 VOD Server Hosting by dataforest GmbH |
+| [Redefined-Streaming](https://redefined-streaming.eu/) | German SRT/SRTLA Server Hosting |
+| [IRL.com.de](https://irl.com.de/?lang=en&mtm_campaign=noalbs) | Free SRT/SRTLA and RTMP/RTMPS relay endpoints hosted in Germany | |
+| [Streamable](https://streamable.run) | Cloud hosting and endpoints - Never IRL Stream with Issues Again! |
+| [StreamGrid](https://streamgrid.io) | IRL Streaming that just works. |
+| [EnhancedIRL](https://enhancedirl.com) | EU-based Cloud OBS & stream relays that keep your IRL stream alive. |
+| [ONAIRL](https://onairl.es/) | CLOUD OBS - Wherever and whenever you want. |
 
 
 Do you offer a similar solution or paid service? Want your link here? Message [@b3ck](https://discordapp.com/channels/@me/96991451006660608) on Discord.
@@ -100,7 +105,14 @@ Do you offer a similar solution or paid service? Want your link here? Message [@
 # Quick Start
 
 - Download the latest binary from [releases](https://github.com/715209/nginx-obs-automatic-low-bitrate-switching/releases)
-- Have [OBS-Studio](https://github.com/obsproject/obs-studio/) and [OBS-WebSocket](https://github.com/obsproject/obs-websocket/releases/latest) 5.0.0 or higher installed
+- Have [OBS-Studio](https://github.com/obsproject/obs-studio/) (OBS-WebSocket 5.x+ comes with OBS.
+- Enable OBS Websocket in OBS:
+<img width="176" height="202" alt="image" src="https://github.com/user-attachments/assets/e7b07f70-de40-4548-90cf-a37e209dc3cf" />
+
+---
+
+<img width="584" height="546" alt="image" src="https://github.com/user-attachments/assets/8e4221c8-5375-448d-8a79-9f9ba2e66122" />
+
 - [Configure NOALBS](#configure-noalbs)
 - Run the executable
 
@@ -115,32 +127,35 @@ NOALBS gives you the option to enable some simple chat commands to help you mana
 <details>
 <summary>Click to view all chat commands</summary>
   
-| Default Role | Command                  | Description                                                                                             | Example            |
-| :----------: | ------------------------ | :------------------------------------------------------------------------------------------------------ | :----------------- |
-|    Admins    | !start                   | on-demand command to start streaming in OBS.                                                            | !start             |
-|    Admins    | !stop                    | on-demand command to stop streaming in OBS.                                                             | !stop              |
-|    Admins    | !record                  | on-demand command to toggle recording in OBS.                                                           | !record            |
-|    Admins    | !collection (name)       | changes the scene collection and profile.                                                               | !collection twitch |
-|    Admins    | !alias (alias) (command) | add an alias for a command.                                                                             | !alias ss switch   |
-|    Admins    | !alias rem (alias)       | removes an alias for a command.                                                                         | !alias rem ss      |
-|    Admins    | !switch (scene)          | switches to the provided SCENE ([fuzzy match](https://wikipedia.org/wiki/Approximate_string_matching)). | !switch INTRO      |
-|    Admins    | !source (value)          | Toggles an OBS source item visibility on the current scene                                              | !source media      |
-|    Admins    | !live                    | switch to the live scene.                                                                               | !live              |
-|    Admins    | !privacy                 | switch to the privacy scene.                                                                            | !privacy           |
-|    Admins    | !starting                | switch to the starting scene.                                                                           | !starting          |
-|    Admins    | !ending                  | switch to the ending scene.                                                                             | !ending            |
-|    Admins    | !noalbs prefix (prefix)  | change noalbs command prefix.                                                                           | !noalbs prefix #   |
-|    Admins    | !noalbs retry (value)    | changes the retry value for the switcher.                                                               | !noalbs retry 5    |
-|    Admins    | !noalbs lang (value)     | changes the chat response language.                                                                     | !noalbs lang zh_tw |
-|     MODs     | !trigger (value)         | changes the low bitrate threshold to the defined value.                                                 | !trigger 800       |
-|     MODs     | !otrigger (value)        | changes the offline bitrate threshold to the defined value.                                             | !otrigger 200      |
-|     MODs     | !rtrigger (value)        | changes the RTT based low threshold to the defined value.                                               | !rtrigger 1500     |
-|     MODs     | !ortrigger (value)       | changes the RTT based offline threshold to the defined value.                                           | !ortrigger 2000    |
-|     MODs     | !sourceinfo              | gives you details about the SOURCE in chat.                                                             | !sourceinfo        |
-|     MODs     | !serverinfo              | gives you details about the SERVER in chat.                                                             | !serverinfo        |
-|     MODs     | !fix                     | tries to fix the stream.                                                                                | !fix               |
-|     MODs     | !refresh                 | tries to fix the stream.                                                                                | !refresh           |
-|    Public    | !bitrate                 | returns the current bitrate.                                                                            | !bitrate           |
+| Default Role | Command                   | Description                                                                                             | Example               |
+| :----------: | ------------------------- | :------------------------------------------------------------------------------------------------------ | :-------------------- |
+|    Admins    | !start                    | on-demand command to start streaming in OBS.                                                            | !start                |
+|    Admins    | !stop                     | on-demand command to stop streaming in OBS.                                                             | !stop                 |
+|    Admins    | !record                   | on-demand command to toggle recording in OBS.                                                           | !record               |
+|    Admins    | !collection (name)        | changes the scene collection and profile.                                                               | !collection twitch    |
+|    Admins    | !alias (alias) (command)  | add an alias for a command.                                                                             | !alias ss switch      |
+|    Admins    | !alias rem (alias)        | removes an alias for a command.                                                                         | !alias rem ss         |
+|    Admins    | !switch (scene)           | switches to the provided SCENE ([fuzzy match](https://wikipedia.org/wiki/Approximate_string_matching)). | !switch INTRO         |
+|    Admins    | !source (value)           | Toggles an OBS source item visibility on the current scene                                              | !source media         |
+|    Admins    | !live                     | switch to the live scene.                                                                               | !live                 |
+|    Admins    | !privacy                  | switch to the privacy scene.                                                                            | !privacy              |
+|    Admins    | !starting                 | switch to the starting scene.                                                                           | !starting             |
+|    Admins    | !ending                   | switch to the ending scene.                                                                             | !ending               |
+|    Admins    | !streamserver (name)      | Toggles the stream server on or off.                                                                    | !streamserver belabox |
+|    Admins    | !noalbs prefix (prefix)   | change noalbs command prefix.                                                                           | !noalbs prefix #      |
+|    Admins    | !noalbs retry (value)     | changes the retry value for the switcher.                                                               | !noalbs retry 5       |
+|    Admins    | !noalbs lang (value)      | changes the chat response language.                                                                     | !noalbs lang zh_tw    |
+|    Admins    | !noalbs ignore (username) | adds a user to the ignore list.                                                                         | !noalbs ignore 715209 |
+|    Admins    | !noalbs rem (username)    | removes a user from the ignore list.                                                                    | !noalbs rem 715209    |
+|     MODs     | !trigger (value)          | changes the low bitrate threshold to the defined value.                                                 | !trigger 800          |
+|     MODs     | !otrigger (value)         | changes the offline bitrate threshold to the defined value.                                             | !otrigger 200         |
+|     MODs     | !rtrigger (value)         | changes the RTT based low threshold to the defined value.                                               | !rtrigger 1500        |
+|     MODs     | !ortrigger (value)        | changes the RTT based offline threshold to the defined value.                                           | !ortrigger 2000       |
+|     MODs     | !sourceinfo               | gives you details about the SOURCE in chat.                                                             | !sourceinfo           |
+|     MODs     | !serverinfo               | gives you details about the SERVER in chat.                                                             | !serverinfo           |
+|     MODs     | !fix                      | tries to fix the stream.                                                                                | !fix                  |
+|     MODs     | !refresh                  | tries to fix the stream.                                                                                | !refresh              |
+|    Public    | !bitrate                  | returns the current bitrate.                                                                            | !bitrate              |
 
 You can also enable/disable certain features from chat, see below:
 
@@ -223,11 +238,12 @@ The `config.json` file holds all the user configurations.
     "onlySwitchWhenStreaming": false,               // Enable or Disable the requirement switching only if OBS has streaming active.
     "instantlySwitchOnRecover": true,               // Bypass retryAttempts and instantly switch to live on bitrate recovery.
     "autoSwitchNotification": true,                 // Enable or Disable chat notifications when auto switching scenes.
-    "retryAttempts": 5,                             // Number of retry attempts NOALBS will check bitrate before actually switching.
+    "retryAttempts": 5,                             // Number of consecutive bitrate checks before switching scenes. NOALBS checks once per second, so 5 = ~5 seconds before switching.
     "triggers": {
       "low": 500,                                   // Low Bitrate threshold in kbps.
       "rtt": 1000,                                  // RTT threshold in ms for SRT.
-      "offline": 450                                // Bitrate in kbps to switch to your offline scene.
+      "offline": 450,                               // Bitrate in kbps to switch to your offline scene.
+      "rttOffline": 3500                            // RTT threshold in ms to switch to offline scene.
     },
     "switchingScenes": {
       "normal": "Live",                             // Scene you want to use in OBS when your bitrate is above your low bitrate threshold.
@@ -278,6 +294,7 @@ The `config.json` file holds all the user configurations.
     "enablePublicCommands": false,                  // Enable or Disable public commands to anyone can use !bitrate in chat.
     "enableModCommands": true,                      // Enable or Disable mod only commands.
     "enableAutoStopStreamOnHostOrRaid": true,       // Enable or Disable auto stop stream in OBS when raiding or hosting.
+    "announceRaidOnAutoStop": true,                 // Enable or Disanle the chat announcement when you raid/host a channel.
     "commands": {                                   // Command Options to override defaults to be used in chat.
       "Fix": {                                      // Full Command Name
         "permission": null,                         // null = Administrators/Default, Public = Public, Vip = VIP, Mod = Moderators, Admin = Administrators
@@ -370,18 +387,19 @@ NOALBS supports integration with both Twitch and Kick as chat platforms. Below a
 When configuring NOALBS to use Kick, you need to specify the `channelId` and `chatroomId`. You can obtain these IDs by visiting [this link](https://b3ck.com/kick/info/).
 
 ```json
-"chat": {
-  "platform": {
-    "Kick": {
-      "channelId": 177817,
-      "chatroomId": 177815
-    }
-  },
-  "admins": ["username1", "username2", "username3", "username4"]
-}
+  "chat": {
+    "platform": {
+      "Kick": {
+        "channelId": 177817,
+        "chatroomId": 177815
+      }
+    },
+    "username": "b3ck",
+    "admins": ["username1", "username2", "username3", "username4"],
+    "language": "EN",
 ```
 
- - PLEASE NOTE: NOALBS Can read Kick chat but cannot respond back in chat since Kick has not released a Public API.. but I heard it's going to be released in 3 weeks, so fingers crossed 😆🤞
+ - PLEASE NOTE: NOALBS Can read Kick chat but cannot respond back in chat as the released Kick Public API is limited.
 
 ### Example for Twitch
 
@@ -404,7 +422,7 @@ Make sure to replace the placeholders with your actual Kick channel and chatroom
 <details>
 <summary>Click to view the servers section</summary>
 
-Currently NOALBS supports [NGINX](#using-nginx), [Nimble](#using-nimble-streamer-server-with-srt-protocol), [Node Media Server](#using-an-external-node-media-server), [SRT Live Server](#using-sls-srt-live-server), [BELABOX](#using-belabox-cloud), [MediaMTX](#using-mediamtx) and [OBS Sources](#using-an-obs-source).
+Currently NOALBS supports [NGINX](#using-nginx), [Nimble](#using-nimble-streamer-server-with-srt-protocol), [Node Media Server](#using-an-external-node-media-server), [SRT Live Server](#using-sls-srt-live-server), [BELABOX](#using-belabox-cloud), [MediaMTX](#using-mediamtx), [WebSocket stats](#using-websocket-stats) and [OBS Sources](#using-an-obs-source).
 You can have as many servers as you want to use in the config.
 
 Example stream server object:
@@ -430,7 +448,7 @@ Example stream server object:
 ```
 
 - `streamServer`: Replace the entire `streamServer` section with the one of [these](#stream-server-objects).
-- `type`: Nginx, NodeMediaServer, Nimble, SrtLiveServer, Belabox, or Mediamtx
+- `type`: Nginx, NodeMediaServer, Nimble, SrtLiveServer, Belabox, Mediamtx, or WebSocket
 - `name`: A unique name to distinguish the server
 - `priority`: Decides which stream server to monitor when multiple are online. 0 is consired the highest.
 - `overrideScenes`: Optional field to override the default scenes
@@ -530,6 +548,17 @@ So in actuality your 'publisher' is your default `StreamID`, like in the example
 > Switches on low bitrate or high RTT (high RTT seems to be a more accurate way of determining if the stream is bad with this)
 You can change the high RTT trigger value inside config.json:
 
+If you're using the [irl-srt-server](https://github.com/irlserver/irl-srt-server) version of srt-live-server you need to add a [pre-configured](https://github.com/irlserver/irl-srt-server/blob/master/src/sls.conf#L11) `apiKey` for authentication.
+
+```JSON
+"streamServer": {
+  "type": "SrtLiveServer",
+  "statsUrl": "http://localhost:8181/stats",
+  "apiKey": "YOUR_API_KEY"
+  "publisher": "publish/live/feed1"
+}
+```
+
 #### How do I publish to the SLS Server?
 
 see [HERE](https://gitlab.com/mattwb65/srt-live-server#1test-with-ffmpeg)
@@ -596,11 +625,15 @@ For more details, refer to the [MediaMTX documentation](https://github.com/bluen
 ```JSON
   "streamServer": {
     "type": "Rist",
-    "statsUrl": "http://localhost:8681/stats"
+    "statsUrl": "http://localhost:8681/stats",
+    "multipath": true
   },
 ```
 
 - `statsUrl`: URL to RIST stats page (ex; <http://localhost:8681/stats> )
+- `multipath`: Optional. Set to `true` for bonded RIST inputs. NOALBS then uses the
+  flow payload bitrate and weights peer RTT by current peer traffic, so an idle or
+  low-traffic degraded path cannot trigger a scene change for a healthy flow.
 
 ---
 
@@ -639,7 +672,82 @@ Note: `application`, `key` and `publisher` are optional fields. Use either `appl
 
 ---
 
-### Using an OBS Source
+### Using WebSocket stats
+
+```JSON
+  "streamServer": {
+    "type": "WebSocket",
+    "url": "ws://127.0.0.1/ws-stats",
+    "feed": "feed1",
+    "reconnectIntervalMs": 1000,
+    "staleTimeoutMs": 3000
+  },
+```
+
+You can also pass the feed in the WebSocket URL:
+
+```JSON
+  "streamServer": {
+    "type": "WebSocket",
+    "url": "ws://127.0.0.1/ws-stats?feed=feed2",
+    "reconnectIntervalMs": 1000,
+    "staleTimeoutMs": 3000
+  },
+```
+
+- `url`: WebSocket stats endpoint. This is intended for relay services that poll HTTP stats once and broadcast updates to NOALBS.
+- `feed`: Optional feed name to select from multi-stream messages. This is dynamic and can be `feed1`, `feed2`, `main`, `backpack`, `cameraA`, or any other stream name.
+- `token`: Optional token. It can also be passed as `token` in the URL query string.
+- `reconnectIntervalMs`: Optional reconnect delay. Defaults to `1000`.
+- `staleTimeoutMs`: Optional timeout after the last received stats update. Defaults to `3000`.
+
+The WebSocket backend accepts single-feed stats messages:
+
+```JSON
+{
+  "type": "stats",
+  "timestamp": 1710000000000,
+  "streamId": "publish/live/feed1",
+  "feed": "feed1",
+  "bitrate": 6200,
+  "packetLoss": 0,
+  "rtt": 80,
+  "connected": true
+}
+```
+
+It also accepts multi-stream stats messages:
+
+```JSON
+{
+  "type": "stats",
+  "timestamp": 1710000000000,
+  "streams": [
+    {
+      "streamId": "publish/live/feed2",
+      "feed": "feed2",
+      "bitrate": 6200,
+      "packetLoss": 0,
+      "rtt": 80,
+      "connected": true
+    }
+  ]
+}
+```
+
+If `feed` is configured, NOALBS matches either the `feed` field or the last segment of `streamId`, so `publish/live/feed2` and `play/live/feed2` both match `feed2`. If no feed is configured, NOALBS uses the first connected stream with bitrate above zero, falling back to the first parseable stream.
+
+To test locally, run the mock server:
+
+```bash
+python3 tools/mock_websocket_stats_server.py
+```
+
+Then configure NOALBS with `ws://127.0.0.1:8765/ws-stats?feed=feed1`. The mock server sends healthy stats every 250ms and periodically drops bitrate to test low/offline switching.
+
+---
+
+### Using an OBS Source (Currently Not Working - DO NOT USE)
 
 ```JSON
   "streamServer": {
@@ -660,6 +768,17 @@ Note: `application`, `key` and `publisher` are optional fields. Use either `appl
 ```
 
 - `statsUrl`: URL to OpenIRL stats page
+
+### Using OpenRTMP
+
+```JSON
+  "streamServer": {
+    "type": "OpenRTMP",
+    "statsUrl": "http://hostname:8080/stats?key=sts_0123456789abcdef0123456789abcdef",
+  },
+```
+
+- `statsUrl`: URL to OpenRTMP stats page
 
 </details>
 
@@ -823,9 +942,27 @@ In the `.env` file add the line `CONFIG_DIR=configs` where `configs` is the fold
 
 ---
 
-## How to log to a file instead
+## Logging
 
-In the `.env` file add the line `LOG_DIR=logs` and `LOG_FILE_NAME=noalbs.log` where `LOG_DIR` is the folder that holds all the log files and `LOG_FILE_NAME` the prefix used for the file name. A new log file will be generated daily.
+By default NOALBS logs to stdout and also writes a log file per run. To
+customize the log file location/name, add `LOG_DIR=logs` and/or
+`LOG_FILE_NAME=noalbs.log` to the `.env` file, where `LOG_DIR` is the folder
+that holds the log files and `LOG_FILE_NAME` is the file name used (defaults
+to a timestamped `noalbs-<unix-ms>.log` in a `logs` folder).
+
+To disable file logging entirely (stdout only), set `"logToFile": false` at
+the top level of `config.json`:
+
+```JSON
+{
+  "user": { ... },
+  "switcher": { ... },
+  "logToFile": false
+}
+```
+
+If file logging can't be set up (e.g. the directory isn't writable), NOALBS
+falls back to stdout-only logging instead of failing to start.
 
 ---
 

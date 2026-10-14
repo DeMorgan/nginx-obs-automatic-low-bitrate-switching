@@ -78,8 +78,11 @@ noalbs:
     retryCount: Aktueller Wiederholungsversuch auf %{count} festgelegt
     retryError: Fehler beim Bearbeiten der Wiederholungsversuche %{count} ist kein gültiger Wert
     retrySuccess: Wiederholungsversuche auf %{count} festgelegt
+    ignoreAdded: "%{username} wurde zur NOALBS-Ignorierliste hinzugefügt"
+    ignoreRemoved: "%{username} wurde aus der NOALBS-Ignorierliste entfernt"
+    ignoreNoUsername: Kein Benutzername angegeben
 scene:
-    success: Zur Szene %{scene} wechseln
+    success: Wechsle auf Szene %{scene}
     error: Keine %{scene}-Szene angegeben
 collection:
     noParams: Keine Szenen-Sammlung angegeben
@@ -87,3 +90,8 @@ collection:
     success: Sammlung erfolgreich auf "%{collection}" umgestellt
     error: "Fehler: Wechsel zur Szenen-Sammlung „%{collection}“ nicht möglich"
     note: "Hinweis: Das Stream-Profil wird nur geändert, wenn nicht gestreamt wird"
+streamserver:
+    noParams: No stream server specified
+    notFound: "Error no stream server found with the name: %{name}"
+    successEnabled: Stream server %{name} successfully enabled
+    successDisabled: Stream server %{name} successfully disabled

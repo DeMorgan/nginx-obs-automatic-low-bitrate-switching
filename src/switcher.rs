@@ -8,7 +8,7 @@ use crate::{
     chat, error,
     noalbs::{self, ChatSender},
     state::ClientStatus,
-    stream_servers,
+    stream_servers::{self, websocket},
 };
 
 pub struct Switcher {
@@ -24,9 +24,13 @@ impl Switcher {
             let mut prev_switch_type: SwitchType = SwitchType::Offline;
             let mut same_type: u8 = 0;
             let mut same_type_seconds = Instant::now();
+            let stats_update_notifier = websocket::stats_update_notifier();
 
             loop {
-                tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+                tokio::select! {
+                    _ = tokio::time::sleep(tokio::time::Duration::from_secs(1)) => {}
+                    _ = stats_update_notifier.notified() => {}
+                }
                 tracing::debug!("Switcher loop");
 
                 if let Some(notifier) = switcher.get_sleep_notifier_if_necessary().await {
@@ -75,11 +79,15 @@ impl Switcher {
             return Some(state.broadcasting_software.start_streaming_notifier());
         }
 
-        if !state
-            .switcher_state
-            .switchable_scenes
-            .contains(&state.broadcasting_software.current_scene)
-        {
+        if !state.switcher_state.switchable_scenes.contains(
+            &state
+                .broadcasting_software
+                .connection
+                .as_ref()?
+                .current_scene()
+                .await
+                .ok()?,
+        ) {
             info!("Not able to switch, waiting for scene switch to a switchable scene");
             return Some(state.broadcasting_software.switch_scene_notifier());
         }
@@ -99,15 +107,23 @@ impl Switcher {
         let triggers = &switcher_config.triggers;
         let stream_servers = &switcher_config.stream_servers;
         let retry_attempts = &switcher_config.retry_attempts;
-        let instant_recover = &switcher_config.instantly_switch_on_recover;
+        let instant_recover = switcher_config.instantly_switch_on_recover;
 
         let (mut server, mut current_switch_type) =
             Self::get_online_stream_server(stream_servers, triggers).await;
 
-        // When stream comes back from offline, instantly switch.
-        let mut force_switch = *instant_recover
+        let instant_recover = instant_recover
             && *prev_switch_type == SwitchType::Offline
             && current_switch_type != SwitchType::Offline;
+        let instant_degrade = Self::should_instant_degrade(
+            server,
+            stream_servers,
+            *prev_switch_type,
+            current_switch_type,
+        );
+        let delay_normal_recovery =
+            Self::should_delay_normal_recovery(server, *prev_switch_type, current_switch_type);
+        let mut force_switch = (instant_recover || instant_degrade) && !delay_normal_recovery;
 
         if prev_switch_type == &current_switch_type {
             *same_type += 1;
@@ -121,18 +137,22 @@ impl Switcher {
 
         debug!("type: {:?}, same: {:?}", current_switch_type, same_type);
 
-        if let SwitchType::Previous = &current_switch_type {
-            if let Some(s) = server {
-                if let Some(last) = &state.switcher_state.last_used_server {
-                    if last != &s.name {
-                        current_switch_type = SwitchType::Normal;
-                        force_switch = true;
-                    }
-                }
-            }
+        if let SwitchType::Previous = &current_switch_type
+            && let Some(s) = server
+            && let Some(last) = &state.switcher_state.last_used_server
+            && last != &s.name
+        {
+            current_switch_type = SwitchType::Normal;
+            force_switch = true;
         }
 
-        if !(same_type == retry_attempts || force_switch) {
+        let retry_satisfied = if delay_normal_recovery {
+            same_type_seconds.elapsed() >= Duration::from_secs((*retry_attempts).into())
+        } else {
+            same_type == retry_attempts
+        };
+
+        if !(retry_satisfied || force_switch) {
             return Ok(());
         }
 
@@ -148,42 +168,40 @@ impl Switcher {
 
         if current_switch_type == SwitchType::Offline {
             // TODO: Refactor the timeout code
-            if let Some(min) = &state.config.optional_options.offline_timeout {
-                if state.broadcasting_software.is_streaming
-                    && same_type_seconds.elapsed() >= Duration::from_secs((min * 60).into())
+            if let Some(min) = &state.config.optional_options.offline_timeout
+                && state.broadcasting_software.is_streaming
+                && same_type_seconds.elapsed() >= Duration::from_secs((min * 60).into())
+            {
+                info!("Offline timeout reached, stopping the stream");
+
+                let bsc = state
+                    .broadcasting_software
+                    .connection
+                    .as_ref()
+                    .ok_or(error::Error::NoSoftwareSet)?;
+
+                if let Err(error) = bsc.stop_streaming().await {
+                    error!("Offline timeout error {:?}", error);
+                    return Ok(());
+                }
+
+                if state.config.optional_options.record_while_streaming
+                    && bsc.is_recording().await?
+                    && let Err(error) = bsc.toggle_recording().await
                 {
-                    info!("Offline timeout reached, stopping the stream");
+                    error!("Offline timeout error {:?}", error);
+                    return Ok(());
+                }
 
-                    let bsc = state
-                        .broadcasting_software
-                        .connection
-                        .as_ref()
-                        .ok_or(error::Error::NoSoftwareSet)?;
+                if let Some(chat) = &state.config.chat {
+                    let message =
+                        chat::HandleMessage::InternalChatUpdate(chat::InternalChatUpdate {
+                            platform: chat.platform.kind(),
+                            channel: chat.username.to_owned(),
+                            kind: chat::InternalUpdate::OfflineTimeout,
+                        });
 
-                    if let Err(error) = bsc.stop_streaming().await {
-                        error!("Offline timeout error {:?}", error);
-                        return Ok(());
-                    }
-
-                    if state.config.optional_options.record_while_streaming
-                        && bsc.is_recording().await?
-                    {
-                        if let Err(error) = bsc.toggle_recording().await {
-                            error!("Offline timeout error {:?}", error);
-                            return Ok(());
-                        }
-                    }
-
-                    if let Some(chat) = &state.config.chat {
-                        let message =
-                            chat::HandleMessage::InternalChatUpdate(chat::InternalChatUpdate {
-                                platform: chat.platform.kind(),
-                                channel: chat.username.to_owned(),
-                                kind: chat::InternalUpdate::OfflineTimeout,
-                            });
-
-                        let _ = self.chat_sender.send(message).await;
-                    }
+                    let _ = self.chat_sender.send(message).await;
                 }
             }
 
@@ -252,6 +270,36 @@ impl Switcher {
         (None, SwitchType::Offline)
     }
 
+    fn should_instant_degrade(
+        server: Option<&stream_servers::StreamServer>,
+        stream_servers: &[stream_servers::StreamServer],
+        previous: SwitchType,
+        current: SwitchType,
+    ) -> bool {
+        if !matches!(previous, SwitchType::Normal | SwitchType::Low)
+            || !matches!(current, SwitchType::Low | SwitchType::Offline)
+            || previous == current
+        {
+            return false;
+        }
+
+        server.is_some_and(|server| server.stream_server.instant_degrade())
+            || (current == SwitchType::Offline
+                && stream_servers
+                    .iter()
+                    .any(|server| server.enabled && server.stream_server.instant_degrade()))
+    }
+
+    fn should_delay_normal_recovery(
+        server: Option<&stream_servers::StreamServer>,
+        previous: SwitchType,
+        current: SwitchType,
+    ) -> bool {
+        current == SwitchType::Normal
+            && previous != SwitchType::Normal
+            && server.is_some_and(|server| server.stream_server.delay_normal_recovery())
+    }
+
     pub async fn switch_if_necessary(
         &self,
         switch_scene: &str,
@@ -263,7 +311,14 @@ impl Switcher {
         );
 
         let state = &self.state.read().await;
-        let current_scene = &state.broadcasting_software.current_scene;
+
+        let bsc = state
+            .broadcasting_software
+            .connection
+            .as_ref()
+            .ok_or(error::Error::UnableInitialConnection)?;
+
+        let current_scene = bsc.current_scene().await?;
 
         if current_scene == switch_scene {
             return Ok(());
@@ -279,7 +334,7 @@ impl Switcher {
                     .config
                     .optional_options
                     .switch_from_starting_scene_to_live_scene;
-                current_scene == starting_scene
+                &current_scene == starting_scene
                     && switch_to_live
                     && (switch_type == SwitchType::Offline)
             });
@@ -310,18 +365,30 @@ impl Switcher {
 
         if state.broadcasting_software.is_streaming
             && state.config.switcher.auto_switch_notification
+            && let Some(chat) = &state.config.chat
         {
-            if let Some(chat) = &state.config.chat {
-                let message =
-                    chat::HandleMessage::AutomaticSwitchingScene(chat::AutomaticSwitchingScene {
-                        platform: chat.platform.kind(),
-                        channel: chat.username.to_owned(),
-                        scene: switch_scene.to_owned(),
-                        switch_type,
-                    });
+            let message =
+                chat::HandleMessage::AutomaticSwitchingScene(chat::AutomaticSwitchingScene {
+                    platform: chat.platform.kind(),
+                    channel: chat.username.to_owned(),
+                    scene: switch_scene.to_owned(),
+                    switch_type,
+                });
 
-                let _ = self.chat_sender.send(message).await;
-            }
+            let _ = self.chat_sender.send(message).await;
+        }
+
+        // In case there's a scene transition set that's longer than the time it takes to retrigger
+        // noalbs switching, this will block the switcher until the transition has completed.
+        if let Err(error) = state
+            .broadcasting_software
+            .connection
+            .as_ref()
+            .ok_or(error::Error::NoSoftwareSet)?
+            .wait_for_scene_transition()
+            .await
+        {
+            error!("Scene transition wait error {:?}", error);
         }
 
         Ok(())
@@ -332,11 +399,11 @@ async fn get_optional_scenes<'a>(
     server: Option<&'a stream_servers::StreamServer>,
     state: &tokio::sync::RwLockReadGuard<'_, crate::state::State>,
 ) -> Option<&'a SwitchingScenes> {
-    if let Some(depends) = &server?.depends_on {
-        if !is_stream_server_online(&depends.name, state).await {
-            debug!("The depended stream server is offline. Going to use the backup scenes.");
-            return Some(&depends.backup_scenes);
-        }
+    if let Some(depends) = &server?.depends_on
+        && !is_stream_server_online(&depends.name, state).await
+    {
+        debug!("The depended stream server is offline. Going to use the backup scenes.");
+        return Some(&depends.backup_scenes);
     }
 
     server?.override_scenes.as_ref()

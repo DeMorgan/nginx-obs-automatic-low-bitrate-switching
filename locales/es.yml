@@ -78,6 +78,9 @@ noalbs:
     retryCount: Reintento actual establecido en %{count}
     retryError: Error al editar reintentos %{count} no es un valor valido
     retrySuccess: Intentos de reintento establecidos en %{count}
+    ignoreAdded: Added %{username} to NOALBS ignore list
+    ignoreRemoved: Removed %{username} from NOALBS ignore list
+    ignoreNoUsername: No username provided
 scene:
     success: Cambiando a escena %{scene}
     error: La escena %{scene} no existe
@@ -87,3 +90,8 @@ collection:
     success: Collection successfully switched to "%{collection}"
     error: Error can't switch to collection "%{collection}"
     note: "Note: the profile will only be changed when not streaming"
+streamserver:
+    noParams: No stream server specified
+    notFound: "Error no stream server found with the name: %{name}"
+    successEnabled: Stream server %{name} successfully enabled
+    successDisabled: Stream server %{name} successfully disabled

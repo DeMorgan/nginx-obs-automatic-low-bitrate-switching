@@ -78,6 +78,9 @@ noalbs:
     retryCount: "Tentativa atual: %{count}"
     retryError: Erro ao editar as tentativas %{count}, não é um valor valido
     retrySuccess: "Tentativa escolhida: %{count}"
+    ignoreAdded: Added %{username} to NOALBS ignore list
+    ignoreRemoved: Removed %{username} from NOALBS ignore list
+    ignoreNoUsername: No username provided
 scene:
     success: Trocando para cena "%{scene}"
     error: A cena %{scene} não pode ser escolhida
@@ -87,3 +90,8 @@ collection:
     success: Coleção trocada com sucesso para "%{collection}"
     error: Não foi possível mudar para a coleção "%{collection}"
     note: "Nota: O perfil será alterado quando não estiver transmitindo"
+streamserver:
+    noParams: No stream server specified
+    notFound: "Error no stream server found with the name: %{name}"
+    successEnabled: Stream server %{name} successfully enabled
+    successDisabled: Stream server %{name} successfully disabled

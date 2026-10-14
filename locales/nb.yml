@@ -78,6 +78,9 @@ noalbs:
     retryCount: Gjeldende gjenopprettingsforsøk er %{count}
     retryError: Feil ved endring av gjenopprettingsforsøk, %{count} er ikke en gyldig verdi
     retrySuccess: Gjenopprettingsforsøk satt til %{count}
+    ignoreAdded: Added %{username} to NOALBS ignore list
+    ignoreRemoved: Removed %{username} from NOALBS ignore list
+    ignoreNoUsername: No username provided
 scene:
     success: Bytter til %{scene}-scene
     error: Ingen %{scene}-scene valgt
@@ -87,3 +90,8 @@ collection:
     success: Kolleksjonen ble byttet til "%{collection}"
     error: Feil, kan ikke bytte til kolleksjon "%{collection}"
     note: "Merk: profilen endres kun når du ikke strømmer"
+streamserver:
+    noParams: No stream server specified
+    notFound: "Error no stream server found with the name: %{name}"
+    successEnabled: Stream server %{name} successfully enabled
+    successDisabled: Stream server %{name} successfully disabled

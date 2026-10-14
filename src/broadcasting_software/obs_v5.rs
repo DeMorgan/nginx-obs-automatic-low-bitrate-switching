@@ -3,20 +3,25 @@ use std::{sync::Arc, time::Duration};
 use async_recursion::async_recursion;
 use async_trait::async_trait;
 use futures_util::StreamExt;
-use obwsv5::{
+use obws::{
     Client,
+    common::MediaAction,
     error::Error,
     events::Event,
     requests::{
+        general::CallVendorRequest,
         inputs::{self, InputId},
         scene_items::SetEnabled,
         scenes::SceneId,
     },
     responses::media_inputs::MediaState,
 };
-use serde::Deserialize;
-use tokio::sync::{self, Mutex, mpsc};
-use tracing::{Instrument, error, info, warn};
+use serde::{Deserialize, Serialize};
+use tokio::{
+    sync::{self, Mutex, mpsc},
+    time::{self, Instant},
+};
+use tracing::{Instrument, debug, error, info, warn};
 
 use crate::{
     config::{self, ObsConfig},
@@ -27,7 +32,7 @@ use crate::{
 use super::BroadcastingSoftwareLogic;
 
 pub struct Obsv5 {
-    connection: Arc<Mutex<Option<obwsv5::Client>>>,
+    connection: Arc<Mutex<Option<obws::Client>>>,
     connection_join: tokio::task::JoinHandle<()>,
     event_join: tokio::task::JoinHandle<()>,
 }
@@ -195,35 +200,38 @@ async fn get_media_sources_rec(
     let current_name = scene;
 
     for item in items {
-        if let Some(ref input_kind) = item.input_kind {
-            if matches!(input_kind.as_ref(), "ffmpeg_source" | "vlc_source") {
-                let status = match client
-                    .media_inputs()
-                    .status(InputId::Name(&item.source_name))
-                    .await
-                {
-                    Ok(s) => s,
-                    Err(_) => continue,
-                };
+        if let Some(ref input_kind) = item.input_kind
+            && matches!(
+                input_kind.as_ref(),
+                "ffmpeg_source" | "vlc_source" | "irl_source" | "smooth_media_source"
+            )
+        {
+            let status = match client
+                .media_inputs()
+                .status(InputId::Name(&item.source_name))
+                .await
+            {
+                Ok(s) => s,
+                Err(_) => continue,
+            };
 
-                if matches!(
-                    status.state,
-                    MediaState::Playing | MediaState::Buffering | MediaState::Opening
-                ) {
-                    sources.push(SourceItem {
-                        id: item.id,
-                        scene_name: current_name.to_owned(),
-                        source_name: item.source_name,
-                        source_kind: input_kind.to_owned(),
-                    });
-                }
-                continue;
+            if matches!(
+                status.state,
+                MediaState::Playing | MediaState::Buffering | MediaState::Opening
+            ) {
+                sources.push(SourceItem {
+                    id: item.id,
+                    scene_name: current_name.to_owned(),
+                    source_name: item.source_name,
+                    source_kind: input_kind.to_owned(),
+                });
             }
+            continue;
         }
 
         if matches!(
             item.source_type,
-            obwsv5::responses::scene_items::SourceType::Scene
+            obws::responses::scene_items::SourceType::Scene
         ) && !visited.contains(&item.source_name)
         {
             visited.push(item.source_name.to_owned());
@@ -269,7 +277,7 @@ async fn get_sources_rec(
 
         if matches!(
             item.source_type,
-            obwsv5::responses::scene_items::SourceType::Scene
+            obws::responses::scene_items::SourceType::Scene
         ) && !visited.contains(&item.source_name)
         {
             visited.push(item.source_name.to_owned());
@@ -316,6 +324,58 @@ impl BroadcastingSoftwareLogic for Obsv5 {
         Ok(scene)
     }
 
+    async fn wait_for_scene_transition(&self) -> Result<(), error::Error> {
+        let transition = {
+            let connection = self.connection.lock().await;
+
+            let client = connection
+                .as_ref()
+                .ok_or(error::Error::UnableInitialConnection)?;
+
+            client.transitions().current().await?
+        };
+
+        debug!("Waiting for transition to complete");
+
+        if let Some(duration) = transition.duration {
+            let wait = Duration::from_millis(duration.whole_milliseconds() as u64)
+                + Duration::from_millis(100);
+            time::sleep(wait).await;
+            return Ok(());
+        }
+
+        let deadline = Instant::now() + Duration::from_secs(30);
+        let mut transition_started = false;
+
+        loop {
+            let cursor = {
+                let connection = self.connection.lock().await;
+
+                let client = connection
+                    .as_ref()
+                    .ok_or(error::Error::UnableInitialConnection)?;
+
+                client.transitions().current_cursor().await?
+            };
+
+            if cursor < 1.0 {
+                transition_started = true;
+            }
+
+            if transition_started && cursor >= 1.0 {
+                break;
+            }
+
+            if Instant::now() >= deadline {
+                break;
+            }
+
+            time::sleep(Duration::from_millis(500)).await;
+        }
+
+        Ok(())
+    }
+
     async fn start_streaming(&self) -> Result<(), error::Error> {
         let connection = self.connection.lock().await;
 
@@ -346,7 +406,7 @@ impl BroadcastingSoftwareLogic for Obsv5 {
             .ok_or(error::Error::UnableInitialConnection)?;
 
         for media in media_playing {
-            let media_inputs = match media.source_kind.as_ref() {
+            let (media_inputs, fix_method) = match media.source_kind.as_ref() {
                 "ffmpeg_source" => {
                     let source = client
                         .inputs()
@@ -354,20 +414,50 @@ impl BroadcastingSoftwareLogic for Obsv5 {
                         .await?;
 
                     if let Some(input) = source.settings.input {
-                        Vec::from([input.to_lowercase()])
+                        (
+                            Vec::from([input.to_lowercase()]),
+                            FixMethod::RewriteSettings,
+                        )
                     } else {
                         continue;
                     }
                 }
-                "vlc_source" => client
-                    .inputs()
-                    .settings::<VlcSource>(InputId::Name(&media.source_name))
-                    .await?
-                    .settings
-                    .playlist
-                    .iter()
-                    .map(|s| s.value.to_lowercase())
-                    .collect::<Vec<String>>(),
+                "vlc_source" => (
+                    client
+                        .inputs()
+                        .settings::<VlcSource>(InputId::Name(&media.source_name))
+                        .await?
+                        .settings
+                        .playlist
+                        .iter()
+                        .map(|s| s.value.to_lowercase())
+                        .collect::<Vec<String>>(),
+                    FixMethod::RewriteSettings,
+                ),
+                "irl_source" => {
+                    let source = client
+                        .inputs()
+                        .settings::<IrlSource>(InputId::Name(&media.source_name))
+                        .await?;
+
+                    if let Some(url) = source.settings.url {
+                        (Vec::from([url.to_lowercase()]), FixMethod::MediaRestart)
+                    } else {
+                        continue;
+                    }
+                }
+                "smooth_media_source" => {
+                    let source = client
+                        .inputs()
+                        .settings::<SmoothMediaSource>(InputId::Name(&media.source_name))
+                        .await?;
+
+                    if let Some(input) = source.settings.input {
+                        (Vec::from([input.to_lowercase()]), FixMethod::VendorRestart)
+                    } else {
+                        continue;
+                    }
+                }
                 s => unimplemented!("Fix not implemented for {}", s),
             };
 
@@ -376,18 +466,49 @@ impl BroadcastingSoftwareLogic for Obsv5 {
                     || m.starts_with("srt")
                     || m.starts_with("udp")
                     || m.starts_with("rist")
+                    || m.starts_with("rtsp")
             }) {
                 continue;
             }
 
-            client
-                .inputs()
-                .set_settings(inputs::SetSettings {
-                    input: InputId::Name(&media.source_name),
-                    settings: &serde_json::json!({}),
-                    overlay: None,
-                })
-                .await?;
+            match fix_method {
+                FixMethod::RewriteSettings => {
+                    client
+                        .inputs()
+                        .set_settings(inputs::SetSettings {
+                            input: InputId::Name(&media.source_name),
+                            settings: &serde_json::json!({}),
+                            overlay: None,
+                        })
+                        .await?;
+                }
+                FixMethod::MediaRestart => {
+                    client
+                        .media_inputs()
+                        .trigger_action(InputId::Name(&media.source_name), MediaAction::Restart)
+                        .await?;
+                }
+                FixMethod::VendorRestart => {
+                    let response = client
+                        .general()
+                        .call_vendor_request::<_, SmoothMediaRestartResponse>(CallVendorRequest {
+                            vendor_name: "obs-smooth-media",
+                            request_type: "RestartSource",
+                            request_data: &SmoothMediaRestartRequest {
+                                source_name: &media.source_name,
+                            },
+                        })
+                        .await?;
+
+                    if !response.response_data.success {
+                        return Err(error::Error::ObsVendorRequest(
+                            response.response_data.error.unwrap_or_else(|| {
+                                "Smooth Media Source restart failed".to_string()
+                            }),
+                        ));
+                    }
+                }
+            }
         }
 
         Ok(())
@@ -416,28 +537,28 @@ impl BroadcastingSoftwareLogic for Obsv5 {
         Ok(status.active)
     }
 
-    async fn get_media_source_status(
-        &self,
-        _source_name: &str,
-    ) -> Result<(obws::responses::MediaState, i64), error::Error> {
-        Err(error::Error::UnableInitialConnection)
-    }
+    // async fn get_media_source_status(
+    //     &self,
+    //     _source_name: &str,
+    // ) -> Result<(obws::responses::MediaState, i64), error::Error> {
+    //     Err(error::Error::UnableInitialConnection)
+    // }
 
-    async fn create_special_media_source(
-        &self,
-        _source_name: &str,
-        _scene_name: &str,
-    ) -> Result<String, error::Error> {
-        Err(error::Error::UnableInitialConnection)
-    }
+    // async fn create_special_media_source(
+    //     &self,
+    //     _source_name: &str,
+    //     _scene_name: &str,
+    // ) -> Result<String, error::Error> {
+    //     Err(error::Error::UnableInitialConnection)
+    // }
 
-    async fn remove_special_media_source(
-        &self,
-        _source_name: &str,
-        _scene: &str,
-    ) -> Result<(), error::Error> {
-        Err(error::Error::UnableInitialConnection)
-    }
+    // async fn remove_special_media_source(
+    //     &self,
+    //     _source_name: &str,
+    //     _scene: &str,
+    // ) -> Result<(), error::Error> {
+    //     Err(error::Error::UnableInitialConnection)
+    // }
 
     async fn current_scene(&self) -> Result<String, error::Error> {
         let connection = self.connection.lock().await;
@@ -471,7 +592,7 @@ impl BroadcastingSoftwareLogic for Obsv5 {
             .await
             .map_err(error::Error::ObsV5Error)?;
 
-        tokio::time::sleep(Duration::from_secs(2)).await;
+        time::sleep(Duration::from_secs(2)).await;
 
         let stream = client
             .streaming()
@@ -496,14 +617,8 @@ impl BroadcastingSoftwareLogic for Obsv5 {
             available_disk_space: stats.available_disk_space,
         };
 
-        if state.broadcasting_software.initial_stream_status.is_some() {
-            ss = ss.calculate_current(
-                state
-                    .broadcasting_software
-                    .initial_stream_status
-                    .as_ref()
-                    .unwrap(),
-            );
+        if let Some(initial_stream_status) = &state.broadcasting_software.initial_stream_status {
+            ss = ss.calculate_current(initial_stream_status);
         };
 
         Ok(ss)
@@ -577,7 +692,7 @@ impl BroadcastingSoftwareLogic for Obsv5 {
 pub struct InnerConnection {
     connection_info: config::ObsConfig,
     state: noalbs::UserState,
-    connection: Arc<Mutex<Option<obwsv5::Client>>>,
+    connection: Arc<Mutex<Option<obws::Client>>>,
     event_sender: mpsc::Sender<Event>,
 }
 
@@ -586,7 +701,7 @@ impl InnerConnection {
         loop {
             let client = self.get_client().await;
 
-            use obwsv5::requests::EventSubscription;
+            use obws::requests::EventSubscription;
             let events = EventSubscription::SCENES | EventSubscription::OUTPUTS;
             if let Err(e) = client.reidentify(events).await {
                 error!("Error reidentifying: {:?}", e)
@@ -639,10 +754,10 @@ impl InnerConnection {
                     let bs = &read.broadcasting_software;
                     let mut status = None;
 
-                    if bs.is_streaming {
-                        if let Some(client) = &bs.connection {
-                            status = client.info(read).await.ok()
-                        }
+                    if bs.is_streaming
+                        && let Some(client) = &bs.connection
+                    {
+                        status = client.info(read).await.ok()
                     }
 
                     status
@@ -674,7 +789,7 @@ impl InnerConnection {
     /// An exponential backoff strategy is used to keep retrying to connect.
     /// This will grow until the 5th retry failure after which the max seconds
     /// will be reached of 32 seconds.
-    async fn get_client(&self) -> obwsv5::Client {
+    async fn get_client(&self) -> obws::Client {
         let mut retry_grow = 1;
 
         loop {
@@ -704,7 +819,7 @@ impl InnerConnection {
 
             let wait = 1 << retry_grow;
             info!("trying to connect again in {} seconds", wait);
-            tokio::time::sleep(Duration::from_secs(wait)).await;
+            time::sleep(Duration::from_secs(wait)).await;
 
             if retry_grow < 5 {
                 retry_grow += 1;
@@ -758,10 +873,80 @@ pub struct VlcSource {
     /// List of files to play.
     pub playlist: Vec<SlideshowFile>,
 }
+/// How a source is made to reconnect.
+enum FixMethod {
+    /// Write empty settings back and rely on the source reopening the
+    /// stream from its update callback, which `ffmpeg_source` does
+    /// unconditionally for anything that is not a local file.
+    RewriteSettings,
+    /// Ask for a media restart. `irl_source` diffs incoming settings and
+    /// applies them to the running stream, so writing settings it already
+    /// has changes nothing; the restart has to be requested.
+    MediaRestart,
+    /// Ask Smooth Media Source to restart through its obs-websocket vendor
+    /// request. Rewriting unchanged settings does not restart this source.
+    VendorRestart,
+}
+
+/// Settings specific to a **IRL** video source.
+#[derive(Deserialize, Debug)]
+pub struct IrlSource {
+    /// URL of the remote media file.
+    pub url: Option<String>,
+}
+
+/// Settings specific to a **Smooth Media Source** input.
+#[derive(Deserialize)]
+pub struct SmoothMediaSource {
+    /// URL of the remote stream.
+    pub input: Option<String>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SmoothMediaRestartRequest<'a> {
+    source_name: &'a str,
+}
+
+#[derive(Deserialize)]
+struct SmoothMediaRestartResponse {
+    success: bool,
+    #[serde(default)]
+    error: Option<String>,
+}
 
 /// Single file as part of a [`Slideshow`].
 #[derive(Deserialize)]
 pub struct SlideshowFile {
     /// Location of the file to display.
     pub value: String,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{SmoothMediaRestartRequest, SmoothMediaRestartResponse};
+
+    #[test]
+    fn smooth_media_restart_uses_vendor_field_names() {
+        let request = SmoothMediaRestartRequest {
+            source_name: "IRL feed",
+        };
+
+        assert_eq!(
+            serde_json::to_value(request).unwrap(),
+            serde_json::json!({ "sourceName": "IRL feed" })
+        );
+    }
+
+    #[test]
+    fn smooth_media_restart_reads_vendor_errors() {
+        let response: SmoothMediaRestartResponse = serde_json::from_value(serde_json::json!({
+            "success": false,
+            "error": "Source not found"
+        }))
+        .unwrap();
+
+        assert!(!response.success);
+        assert_eq!(response.error.as_deref(), Some("Source not found"));
+    }
 }

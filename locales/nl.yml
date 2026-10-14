@@ -78,6 +78,9 @@ noalbs:
     retryCount: Huidige poging ingesteld op %{count}
     retryError: Fout bij het bewerken van nieuwe pogingen %{count} is geen geldige waarde
     retrySuccess: Opnieuw proberen ingesteld op %{count}
+    ignoreAdded: Added %{username} to NOALBS ignore list
+    ignoreRemoved: Removed %{username} from NOALBS ignore list
+    ignoreNoUsername: No username provided
 scene:
     success: Overschakelen naar %{scene} scène
     error: Geen %{scene} scène ingesteld
@@ -87,3 +90,8 @@ collection:
     success: Verzameling succesvol geschakeld naar "%{collection}"
     error: Fout, kan niet overschakelen naar verzameling "%{collection}"
     note: "Opmerking: het profiel wordt alleen gewijzigd als er niet wordt gestreamd"
+streamserver:
+    noParams: No stream server specified
+    notFound: "Error no stream server found with the name: %{name}"
+    successEnabled: Stream server %{name} successfully enabled
+    successDisabled: Stream server %{name} successfully disabled

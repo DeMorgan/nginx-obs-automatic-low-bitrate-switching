@@ -75,6 +75,14 @@ impl Twitch {
                     }
                 }
                 message::ServerMessage::Privmsg(msg) => {
+                    // Ignore messages not originating from the current channel
+                    let source_room_id = msg.source.tags.0.get("source-room-id");
+                    if let Some(source_room_id) = source_room_id
+                        && &msg.channel_id != source_room_id
+                    {
+                        continue;
+                    }
+
                     let permission =
                         msg.badges
                             .iter()
@@ -82,6 +90,7 @@ impl Twitch {
                                 match badge.name.as_str() {
                                     "vip" => chat::Permission::Vip,
                                     "moderator" => chat::Permission::Mod,
+                                    "lead_moderator" => chat::Permission::Mod,
                                     "broadcaster" => chat::Permission::Admin,
                                     _ => acc,
                                 }

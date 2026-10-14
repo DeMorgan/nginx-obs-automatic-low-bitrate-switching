@@ -78,6 +78,9 @@ noalbs:
     retryCount: "Поточну кількість спроб встановлено в %{count}"
     retryError: "Помилка редагування кількості спроб, %{count} недійсне значення"
     retrySuccess: "Кількість спроб встановлено в %{count}"
+    ignoreAdded: Added %{username} to NOALBS ignore list
+    ignoreRemoved: Removed %{username} from NOALBS ignore list
+    ignoreNoUsername: No username provided
 scene:
     success: "Перемикання на сцену %{scene}"
     error: "Не задано сцену %{scene}"
@@ -87,3 +90,8 @@ collection:
     success: "Колекцію успішно перемкнуто на \"%{collection}\""
     error: "Помилка: не вдалося перемкнутися на колекцію \"%{collection}\""
     note: "Примітка: профіль буде змінено лише коли стрім не активний"
+streamserver:
+    noParams: No stream server specified
+    notFound: "Error no stream server found with the name: %{name}"
+    successEnabled: Stream server %{name} successfully enabled
+    successDisabled: Stream server %{name} successfully disabled

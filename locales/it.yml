@@ -78,6 +78,9 @@ noalbs:
     retryCount: le prove di attenti sono settete a  %{count}
     retryError: Errore della modifica di prove di attenti %{count} il volume non e valido
     retrySuccess: prove di attenti settati a %{count}
+    ignoreAdded: Added %{username} to NOALBS ignore list
+    ignoreRemoved: Removed %{username} from NOALBS ignore list
+    ignoreNoUsername: No username provided
 scene:
     success: cambiamo la scena a %{scene}
     error: nessuna %{scene} e stata settata
@@ -87,3 +90,8 @@ collection:
     success: Collection successfully switched to "%{collection}"
     error: Error can't switch to collection "%{collection}"
     note: "Note: the profile will only be changed when not streaming"
+streamserver:
+    noParams: No stream server specified
+    notFound: "Error no stream server found with the name: %{name}"
+    successEnabled: Stream server %{name} successfully enabled
+    successDisabled: Stream server %{name} successfully disabled
